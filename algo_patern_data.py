@@ -87,7 +87,7 @@ def A_search_patern_data_heap(puzzle, size):
 
     tab_patern = extract_patern(puzzle_goal, size)
     patern_data = {}
-    filename = f"patern_data_s{size}"
+    filename = f"patern/patern_data_s{size}"
     if os.path.exists(filename):
         print("Load patern")
         with open(filename, "rb") as f:
