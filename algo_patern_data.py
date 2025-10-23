@@ -2,7 +2,7 @@ import heapq
 import time
 import os
 import pickle
-from utils import make_goal, possible_moves
+from utils import possible_moves
 
 def extract_patern(puzzle, size):
     patern = []
@@ -75,17 +75,17 @@ def BFS(puzzle_goal, patern, size):
         all_posibilities.append(cost)
     return all_posibilities
 
-def A_search_patern_data_heap(puzzle, size):
-    puzzle_goal = make_goal(size)
-    if puzzle == puzzle_goal:
+def A_search_patern_data_heap(puzzle, size, goal):
+    if puzzle == goal:
         print("Already solved !")
         return None
 
+    max_len_open = 0
     open_heap = []
     g_values = {tuple(puzzle): 0}
     h_save = {}
 
-    tab_patern = extract_patern(puzzle_goal, size)
+    tab_patern = extract_patern(goal, size)
     patern_data = {}
     filename = f"patern/patern_data_s{size}"
     if os.path.exists(filename):
@@ -95,7 +95,7 @@ def A_search_patern_data_heap(puzzle, size):
     else:
         print("Build patern")
         start = time.time()
-        patern_data = BFS(puzzle_goal, tab_patern, size)
+        patern_data = BFS(goal, tab_patern, size)
         end = time.time()
         print("Time to build pattern:", round(end - start, 3), "seconds")
         with open(filename, "wb") as f:
@@ -116,7 +116,9 @@ def A_search_patern_data_heap(puzzle, size):
             continue
         close_tab.add(t_chosen)
 
-        if t_chosen == tuple(puzzle_goal):
+        if t_chosen == tuple(goal):
+            print("Max len open_heap:", max_len_open)
+            print("Evaluate state:", len(close_tab))
             path = [chosen_tab]
             while tuple(path[-1]) in chemin:
                 path.append(chemin[tuple(path[-1])])
@@ -134,4 +136,6 @@ def A_search_patern_data_heap(puzzle, size):
                 h_next = heuristic_pattern_database(pos_puzzle, tab_patern, patern_data, h_save)
                 f_next = g_next + h_next
                 heapq.heappush(open_heap, (f_next, pos_puzzle))
+                if len(open_heap) > max_len_open:
+                        max_len_open = len(open_heap)
     return None

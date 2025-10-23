@@ -1,4 +1,4 @@
-def make_goal(s):
+def make_goal_snail(s):
     ts = s * s
     puzzle = [-1 for i in range(ts)]
     cur = 1

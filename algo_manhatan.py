@@ -1,6 +1,6 @@
 import sys
 import heapq
-from utils import make_goal, give_coordinate, possible_moves
+from utils import give_coordinate, possible_moves
 
 def heuristic_manhattan(puzzle, puzzle_goal, size):
     def dist_manhattan(puzzle, puzzle_goal, nb, size):
@@ -11,9 +11,8 @@ def heuristic_manhattan(puzzle, puzzle_goal, size):
 
     return sum(dist_manhattan(puzzle, puzzle_goal, nb, size) for nb in range(1, size * size))
 
-def A_search_manhatan(puzzle, size):
-    puzzle_goal = make_goal(size)
-    if puzzle == puzzle_goal:
+def A_search_manhatan(puzzle, size, goal):
+    if puzzle == goal:
         print("Already solved !")
         return 0
 
@@ -29,12 +28,12 @@ def A_search_manhatan(puzzle, size):
         f_min = sys.maxsize
         for tab in open_tab:
             # f = g + h
-            f = g_values[tuple(tab)] + heuristic_manhattan(tab, puzzle_goal, size)
+            f = g_values[tuple(tab)] + heuristic_manhattan(tab, goal, size)
             if f < f_min:
                 f_min = f
                 chosen_tab = tab
 
-        if chosen_tab == puzzle_goal:
+        if chosen_tab == goal:
             print("Max len open_tab:", max_len_open)
             print("Evaluate state:", len(close_tab))
             path = [chosen_tab]
@@ -60,9 +59,8 @@ def A_search_manhatan(puzzle, size):
                         chemin[tuple(pos_puzzle)] = chosen_tab
     return None
 
-def A_search_manhatan_heap(puzzle, size):
-    puzzle_goal = make_goal(size)
-    if puzzle == puzzle_goal:
+def A_search_manhatan_heap(puzzle, size, goal):
+    if puzzle == goal:
         print("Already solved !")
         return None
 
@@ -72,7 +70,7 @@ def A_search_manhatan_heap(puzzle, size):
     chemin = {}
     close_tab = set()
 
-    f_start = heuristic_manhattan(puzzle, puzzle_goal, size)
+    f_start = heuristic_manhattan(puzzle, goal, size)
     heapq.heappush(open_heap, (f_start, puzzle))
 
     while open_heap:
@@ -83,7 +81,7 @@ def A_search_manhatan_heap(puzzle, size):
             continue
         close_tab.add(t_chosen)
 
-        if chosen_tab == puzzle_goal:
+        if chosen_tab == goal:
             print("Max len open_heap:", max_len_open)
             print("Evaluate state:", len(close_tab))
             path = [chosen_tab]
@@ -98,7 +96,7 @@ def A_search_manhatan_heap(puzzle, size):
                 if tuple(pos_puzzle) not in g_values or g_next < g_values[tuple(pos_puzzle)]:
                     g_values[tuple(pos_puzzle)] = g_next
                     chemin[tuple(pos_puzzle)] = chosen_tab
-                    f_next = g_next + heuristic_manhattan(pos_puzzle, puzzle_goal, size)
+                    f_next = g_next + heuristic_manhattan(pos_puzzle, goal, size)
                     heapq.heappush(open_heap, (f_next, pos_puzzle))
                     if len(open_heap) > max_len_open:
                         max_len_open = len(open_heap)

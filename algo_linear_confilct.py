@@ -1,6 +1,6 @@
 import sys
 import heapq
-from utils import make_goal, give_coordinate, possible_moves
+from utils import give_coordinate, possible_moves
 
 def heuristic_manhattan(puzzle, puzzle_goal, size):
     def dist_manhattan(puzzle, puzzle_goal, nb, size):
@@ -41,12 +41,12 @@ def nb_conflict(puzzle, puzzle_goal, size):
 def heuristic_linear_conflict(puzzle, puzzle_goal, size):
     return heuristic_manhattan(puzzle, puzzle_goal, size) + 2 * (nb_conflict(puzzle, puzzle_goal, size))
 
-def A_search_linear_confilct(puzzle, size):
-    puzzle_goal = make_goal(size)
-    if puzzle == puzzle_goal:
+def A_search_linear_confilct(puzzle, size, goal):
+    if puzzle == goal:
         print("Already solved !")
         return 0
 
+    max_len_open = 0
     open_tab = []
     open_tab.append(puzzle)
     close_tab = set()
@@ -58,11 +58,13 @@ def A_search_linear_confilct(puzzle, size):
         f_min = sys.maxsize
         for tab in open_tab:
             # f = g + h
-            f = g_values[tuple(tab)] + heuristic_linear_conflict(tab, puzzle_goal, size)
+            f = g_values[tuple(tab)] + heuristic_linear_conflict(tab, goal, size)
             if f < f_min:
                 f_min = f
                 chosen_tab = tab
-        if chosen_tab == puzzle_goal:
+        if chosen_tab == goal:
+            print("Max len open_tap:", max_len_open)
+            print("Evaluate state:", len(close_tab))
             path = [chosen_tab]
             while tuple(path[-1]) in chemin:
                 path.append(chemin[tuple(path[-1])])
@@ -78,24 +80,26 @@ def A_search_linear_confilct(puzzle, size):
                     g_values[tuple(pos_puzzle)] = g_values[tuple(chosen_tab)] + 1
                     chemin[tuple(pos_puzzle)] = chosen_tab
                     open_tab.append(pos_puzzle)
+                    if len(open_tab) > max_len_open:
+                        max_len_open = len(open_tab)
                 else:
                     if g_values[tuple(chosen_tab)] + 1 < g_values[tuple(pos_puzzle)]:
                         g_values[tuple(pos_puzzle)] = g_values[tuple(chosen_tab)] + 1
                         chemin[tuple(pos_puzzle)] = chosen_tab
     return None
 
-def A_search_linear_confilct_heap(puzzle, size):
-    puzzle_goal = make_goal(size)
-    if puzzle == puzzle_goal:
+def A_search_linear_confilct_heap(puzzle, size, goal):
+    if puzzle == goal:
         print("Already solved !")
         return None
 
+    max_len_open = 0
     open_heap = []
     g_values = {tuple(puzzle): 0}
     chemin = {}
     close_tab = set()
 
-    f_start = heuristic_linear_conflict(puzzle, puzzle_goal, size)
+    f_start = heuristic_linear_conflict(puzzle, goal, size)
     heapq.heappush(open_heap, (f_start, puzzle))
 
     while open_heap:
@@ -106,7 +110,9 @@ def A_search_linear_confilct_heap(puzzle, size):
             continue
         close_tab.add(t_chosen)
 
-        if chosen_tab == puzzle_goal:
+        if chosen_tab == goal:
+            print("Max len open_heap:", max_len_open)
+            print("Evaluate state:", len(close_tab))
             path = [chosen_tab]
             while tuple(path[-1]) in chemin:
                 path.append(chemin[tuple(path[-1])])
@@ -119,7 +125,9 @@ def A_search_linear_confilct_heap(puzzle, size):
                 if tuple(pos_puzzle) not in g_values or g_next < g_values[tuple(pos_puzzle)]:
                     g_values[tuple(pos_puzzle)] = g_next
                     chemin[tuple(pos_puzzle)] = chosen_tab
-                    f_next = g_next + heuristic_linear_conflict(pos_puzzle, puzzle_goal, size)
+                    f_next = g_next + heuristic_linear_conflict(pos_puzzle, goal, size)
                     heapq.heappush(open_heap, (f_next, pos_puzzle))
+                    if len(open_heap) > max_len_open:
+                        max_len_open = len(open_heap)
 
     return None
