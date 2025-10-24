@@ -8,7 +8,7 @@ from algo_manhatan import A_search_manhatan, A_search_manhatan_heap
 from algo_linear_confilct import A_search_linear_confilct, A_search_linear_confilct_heap
 from algo_patern_data import A_search_patern_data_heap
 from interface import show_game
-from utils import make_goal_snail
+from utils import make_goal_snail, parse_input, is_solvable_snail
 
 def make_puzzle(s, solvable, iterations):
     def swap_empty(p):
@@ -46,7 +46,8 @@ if __name__ == "__main__":
     parser.add_argument("-u", "--unsolvable", action="store_true", default=False, help="Forces generation of an unsolvable puzzle")
     parser.add_argument("-i", "--iterations", type=int, default=10000, help="Number of passes")
     parser.add_argument("-m", "--method", type=str, default="Manhattan", help="Heuristic method to use (Manhattan - Pattern Database - Linear Conflict)")
-    # parser.add_argument("-g", "--goal", type=str, default="Snail", help="Goal to reach a the end (Snail - Row-major - Inverse Row-major)")
+    parser.add_argument("-pf", "--puzzle_in_file", type=str, default=None, help="Import a file (size of the puzzle then the puzzle)")
+    parser.add_argument("-p", "--puzzle", type=str, default=None, help="Enter the puzzle format (i i i i ...)")
 
     args = parser.parse_args()
 
@@ -73,16 +74,28 @@ if __name__ == "__main__":
     elif args.unsolvable:
         solv = False
 
-    s = args.size
+    if args.puzzle != None:
+        print("Custom puzzle")
+        calc_size, puzzle = parse_input(args.puzzle)
+        if not calc_size:
+            print("Error in puzzle input !")
+            sys.exit(1)
+        else:
+            s = calc_size
+        if not is_solvable_snail(puzzle, s):
+            print("Puzzle unsolvable:", puzzle)
+            sys.exit(1)
+        print("# This puzzle is solvable")
+    else:
+        s = args.size
+        puzzle = make_puzzle(s, solvable=solv, iterations=args.iterations)
+        print("# This puzzle is %s" % ("solvable" if solv else "unsolvable"))
 
-    puzzle = make_puzzle(s, solvable=solv, iterations=args.iterations)
+    # print("PUZZLE:", puzzle)
 
     w = len(str(s * s))
-    print("# This puzzle is %s" % ("solvable" if solv else "unsolvable"))
     for y in range(s):
         print(" ".join(str(puzzle[x + y * s]).rjust(w) for x in range(s)))
-
-    print(puzzle)
 
     chemin = None
     chemin2 = None
@@ -117,5 +130,5 @@ if __name__ == "__main__":
             print()
             for i in chemin2:
                 print(i)
+        show_game(s, puzzle, chemin)
 
-    show_game(s, puzzle, chemin)

@@ -69,6 +69,7 @@ def A_search_linear_confilct(puzzle, size, goal):
             while tuple(path[-1]) in chemin:
                 path.append(chemin[tuple(path[-1])])
             path.reverse()
+            print("Nb move:", len(path))
             return path
 
         open_tab.remove(chosen_tab)
@@ -117,6 +118,7 @@ def A_search_linear_confilct_heap(puzzle, size, goal):
             while tuple(path[-1]) in chemin:
                 path.append(chemin[tuple(path[-1])])
             path.reverse()
+            print("Nb move:", len(path))
             return path
 
         for pos_puzzle in possible_moves(chosen_tab, size):

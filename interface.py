@@ -5,7 +5,7 @@ def print_grid(carac_screen, colors, size, puzzle):
     font = pygame.font.Font(None, 100)
     size_case = carac_screen["width"] / size
 
-    color_line = colors["DARK_GREY"]
+    color_line = colors["BLACK"]
     
     for i in range(1, size):
         pygame.draw.line(carac_screen["screen"], color_line, (0, size_case * i), (800, size_case * i), width=3)
@@ -103,9 +103,10 @@ def show_game(size, puzzle, chemin):
         "clock": clock
     }
 
-    current_swap = 0
-    swap_step = 0
-    steps_per_swap = 30
+    carac_screen["screen"].fill(colors["WHITE"])
+    print_grid(carac_screen, colors, size, puzzle)
+    pygame.display.flip()
+    time.sleep(2)
 
     # Boucle principale
     while carac_screen["running"]:
