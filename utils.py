@@ -1,4 +1,13 @@
 import math
+import time
+import sys
+import psutil, os
+
+def calc_time(func, puzzle, s, goal, algo):
+    st = time.time()
+    path = func(puzzle, s, goal, algo)
+    e = time.time()
+    return round(e - st, 3), path
 
 def make_goal_snail(s):
     ts = s * s
@@ -62,26 +71,63 @@ def possible_moves(current_state, size):
 def parse_input(input):
     values = input.split()
     size = math.sqrt(len(values))
-    if not size.is_integer() or int(size) < 3:
+    if not size.is_integer() or size < 3:
         print("Wrong number of input")
         return False, False
     for i in range(len(values)):
         if not values[i].isdigit():
             return False, False
         values[i] = int(values[i])
-    cpy_value = values[:]
+    cpy_puzzle = values[:]
     values.sort()
-    find_zero = False, False
+    find_zero = False
     for i in range(len(values) - 1):
         if values[i] == 0:
             find_zero = True
         if values[i] + 1 != values[i + 1]:
             return False, False
     if not find_zero:
-        print("Missing zero")
         return False, False
 
-    return int(size), cpy_value
+    return int(size), cpy_puzzle
+
+def parse_file(file):
+    lines = file.split("\n")
+    tab = []
+
+    for line in lines:
+        if "#" in line:
+            line = line[:line.find("#")]
+        line = line.strip()
+        if line:
+            tab.append(line)
+    size = float(tab[0])
+    if not size.is_integer() or size < 3:
+        print("Wrong number of input")
+        return False, False
+    puzzle = []
+    for i in range(1, len(tab)):
+        val = tab[i].split()
+        if len(val) != size:
+            return False, False
+        for i in val:
+            if not i.isdigit():
+                return False, False
+            puzzle.append(int(i))
+    cpy_puzzle = puzzle[:]
+    puzzle.sort()
+    find_zero = False
+    for i in range(len(puzzle) - 1):
+        if puzzle[i] == 0:
+            find_zero = True
+        if puzzle[i] + 1 != puzzle[i + 1]:
+            return False, False
+    if not find_zero:
+        return False, False
+    if size * size != len(cpy_puzzle):
+        return False, False
+    
+    return int(size), cpy_puzzle
 
 def count_permutation(start, goal):
     start_no_zero = [x for x in start if x != 0]
@@ -105,3 +151,13 @@ def is_solvable_snail(puzzle, size):
     g_parity = count_permutation(goal, goal)
     
     return p_parity == g_parity
+
+def check_memory(end=False):
+    process = psutil.Process(os.getpid())
+    use_mem = process.memory_info().rss / 1024 ** 2
+    total_mem = psutil.virtual_memory().total / (1024 ** 2)
+    if use_mem > total_mem * 0.7:
+        print(f"ALERT: Memory usage: {use_mem:.2f} / {total_mem:.2f} MB")
+        sys.exit(1)
+    if end == True:
+        print(f"Memory usage: {use_mem:.2f} MB")

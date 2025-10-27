@@ -80,6 +80,7 @@ def show_game(size, puzzle, chemin):
         "BLACK": (0, 0, 0),
         "RED": (255, 0, 0),
         "GREEN": (0, 255, 0),
+        "LIGHT_GREEN": (144, 238, 144),
         "BLUE": (0, 0, 255),
         "YELLOW": (255, 255, 0),
         "CYAN": (0, 255, 255),
@@ -122,20 +123,20 @@ def show_game(size, puzzle, chemin):
         if carac_screen["running"]:
             animate_path(carac_screen, colors, size, chemin, puzzle)
 
-    carac_screen["screen"].fill(colors["WHITE"])
+    carac_screen["screen"].fill(colors["LIGHT_GREEN"])
     print_grid(carac_screen, colors, size, puzzle)
     pygame.display.flip()
 
     count = 0
     stop_game = False
-    while count < 100 and not stop_game:
+    while count < 1000 and not stop_game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 stop_game = True
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     stop_game = True
-        time.sleep(0.1)
+        time.sleep(0.01)
         count += 1
         
     pygame.quit()

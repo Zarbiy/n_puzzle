@@ -2,7 +2,7 @@ import heapq
 import time
 import os
 import pickle
-from utils import possible_moves
+from utils import possible_moves, check_memory
 
 def extract_patern(puzzle, size):
     patern = []
@@ -75,7 +75,7 @@ def BFS(puzzle_goal, patern, size):
         all_posibilities.append(cost)
     return all_posibilities
 
-def A_search_patern_data_heap(puzzle, size, goal):
+def A_search_patern_data_heap(puzzle, size, goal, algo):
     if puzzle == goal:
         print("Already solved !")
         return None
@@ -98,6 +98,7 @@ def A_search_patern_data_heap(puzzle, size, goal):
         patern_data = BFS(goal, tab_patern, size)
         end = time.time()
         print("Time to build pattern:", round(end - start, 3), "seconds")
+        print("Nb element:", len(patern_data))
         with open(filename, "wb") as f:
             pickle.dump(patern_data, f)
         print("Pattern save")
@@ -109,6 +110,7 @@ def A_search_patern_data_heap(puzzle, size, goal):
     close_tab = set()
 
     while open_heap:
+        check_memory()
         chosen_tab = heapq.heappop(open_heap)[1]
         t_chosen = tuple(chosen_tab)
 
@@ -117,6 +119,7 @@ def A_search_patern_data_heap(puzzle, size, goal):
         close_tab.add(t_chosen)
 
         if t_chosen == tuple(goal):
+            check_memory(True)
             print("Max len open_heap:", max_len_open)
             print("Evaluate state:", len(close_tab))
             path = [chosen_tab]
@@ -135,7 +138,12 @@ def A_search_patern_data_heap(puzzle, size, goal):
                 g_values[tuple(pos_puzzle)] = g_next
                 chemin[tuple(pos_puzzle)] = chosen_tab
                 h_next = heuristic_pattern_database(pos_puzzle, tab_patern, patern_data, h_save)
-                f_next = g_next + h_next
+                if algo == "astar":
+                    f_next = g_next + h_next
+                elif algo == "uniform":
+                    f_next = g_next
+                elif algo == "greedy":
+                    f_next = h_next
                 heapq.heappush(open_heap, (f_next, pos_puzzle))
                 if len(open_heap) > max_len_open:
                         max_len_open = len(open_heap)

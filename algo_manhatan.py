@@ -1,6 +1,6 @@
 import sys
 import heapq
-from utils import give_coordinate, possible_moves
+from utils import give_coordinate, possible_moves, check_memory
 
 def heuristic_manhattan(puzzle, puzzle_goal, size):
     def dist_manhattan(puzzle, puzzle_goal, nb, size):
@@ -11,10 +11,14 @@ def heuristic_manhattan(puzzle, puzzle_goal, size):
 
     return sum(dist_manhattan(puzzle, puzzle_goal, nb, size) for nb in range(1, size * size))
 
-def A_search_manhatan(puzzle, size, goal):
+def A_search_manhatan(puzzle, size, goal, algo):
+    if size > 3:
+        print("Method too slow for this size ! Pass")
+        return None
+
     if puzzle == goal:
         print("Already solved !")
-        return 0
+        return None
 
     max_len_open = 0
     open_tab = []
@@ -25,15 +29,21 @@ def A_search_manhatan(puzzle, size, goal):
     chemin = {}
 
     while len(open_tab) > 0:
+        check_memory()
         f_min = sys.maxsize
         for tab in open_tab:
-            # f = g + h
-            f = g_values[tuple(tab)] + heuristic_manhattan(tab, goal, size)
+            if algo == "astar":
+                f = g_values[tuple(tab)] + heuristic_manhattan(tab, goal, size)
+            elif algo == "uniform":
+                f = g_values[tuple(tab)]
+            elif algo == "greedy":
+                f = heuristic_manhattan(tab, goal, size)
             if f < f_min:
                 f_min = f
                 chosen_tab = tab
 
         if chosen_tab == goal:
+            check_memory(True)
             print("Max len open_tab:", max_len_open)
             print("Evaluate state:", len(close_tab))
             path = [chosen_tab]
@@ -60,7 +70,7 @@ def A_search_manhatan(puzzle, size, goal):
                         chemin[tuple(pos_puzzle)] = chosen_tab
     return None
 
-def A_search_manhatan_heap(puzzle, size, goal):
+def A_search_manhatan_heap(puzzle, size, goal, algo):
     if puzzle == goal:
         print("Already solved !")
         return None
@@ -75,6 +85,7 @@ def A_search_manhatan_heap(puzzle, size, goal):
     heapq.heappush(open_heap, (f_start, puzzle))
 
     while open_heap:
+        check_memory()
         chosen_tab = heapq.heappop(open_heap)[1]
         t_chosen = tuple(chosen_tab)
 
@@ -83,6 +94,7 @@ def A_search_manhatan_heap(puzzle, size, goal):
         close_tab.add(t_chosen)
 
         if chosen_tab == goal:
+            check_memory(True)
             print("Max len open_heap:", max_len_open)
             print("Evaluate state:", len(close_tab))
             path = [chosen_tab]
@@ -98,7 +110,12 @@ def A_search_manhatan_heap(puzzle, size, goal):
                 if tuple(pos_puzzle) not in g_values or g_next < g_values[tuple(pos_puzzle)]:
                     g_values[tuple(pos_puzzle)] = g_next
                     chemin[tuple(pos_puzzle)] = chosen_tab
-                    f_next = g_next + heuristic_manhattan(pos_puzzle, goal, size)
+                    if algo == "astar":
+                        f_next = g_next + heuristic_manhattan(pos_puzzle, goal, size)
+                    elif algo == "uniform":
+                        f_next = g_next
+                    elif algo == "greedy":
+                        f_next = heuristic_manhattan(pos_puzzle, goal, size)
                     heapq.heappush(open_heap, (f_next, pos_puzzle))
                     if len(open_heap) > max_len_open:
                         max_len_open = len(open_heap)
