@@ -128,14 +128,14 @@ def show_game(size, puzzle, chemin):
     pygame.display.flip()
 
     count = 0
-    stop_game = False
-    while count < 1000 and not stop_game:
+    close_game = False
+    while count < 1000 and not close_game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                stop_game = True
+                close_game = True
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    stop_game = True
+                    close_game = True
         time.sleep(0.01)
         count += 1
         

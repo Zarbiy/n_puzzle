@@ -8,6 +8,7 @@ from algo_manhatan import A_search_manhatan, A_search_manhatan_heap
 from algo_linear_confilct import A_search_linear_confilct, A_search_linear_confilct_heap
 from algo_patern_data import A_search_patern_data_heap
 from interface import show_game
+from interface_qt import show_game_qt
 from utils import make_goal_snail, parse_input, parse_file, is_solvable_snail, calc_time
 
 def make_puzzle(s, solvable, iterations):
@@ -159,8 +160,11 @@ if __name__ == "__main__":
     if chemin2:
         for i in chemin2:
             print(i)
+    # if chemin1:
+    #     show_game(s, puzzle, chemin1)
+    # elif chemin2:
+    #     show_game(s, puzzle, chemin2)
     if chemin1:
-        show_game(s, puzzle, chemin1)
+        show_game_qt(s, chemin1)
     elif chemin2:
-        show_game(s, puzzle, chemin2)
-
+        show_game_qt(s, chemin2)

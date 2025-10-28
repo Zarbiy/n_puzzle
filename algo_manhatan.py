@@ -86,7 +86,7 @@ def A_search_manhatan_heap(puzzle, size, goal, algo):
 
     while open_heap:
         check_memory()
-        chosen_tab = heapq.heappop(open_heap)[1]
+        _, chosen_tab = heapq.heappop(open_heap)
         t_chosen = tuple(chosen_tab)
 
         if t_chosen in close_tab:

@@ -73,7 +73,7 @@ def BFS(puzzle_goal, patern, size):
 
         # print(len(cost))
         all_posibilities.append(cost)
-    return all_posibilities
+    return tuple(all_posibilities)
 
 def A_search_patern_data_heap(puzzle, size, goal, algo):
     if puzzle == goal:
@@ -111,7 +111,7 @@ def A_search_patern_data_heap(puzzle, size, goal, algo):
 
     while open_heap:
         check_memory()
-        chosen_tab = heapq.heappop(open_heap)[1]
+        _, chosen_tab = heapq.heappop(open_heap)
         t_chosen = tuple(chosen_tab)
 
         if t_chosen in close_tab:
