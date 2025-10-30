@@ -2,26 +2,45 @@ import heapq
 import time
 import os
 import pickle
+import gc
 from utils import possible_moves, check_memory
 
-def extract_patern(puzzle, size):
+def extract_patern(size):
     patern = []
-    if size <= 4:
-        for i in range(0, len(puzzle), size):
-            pi = []
-            for j in range(size):
-                if puzzle[i + j] != 0:
-                    pi.append(puzzle[i + j])
-            patern.append(pi)
-    else:
-        pad = 3
-        for i in range(0, len(puzzle), pad):
-            pi = []
-            for j in range(pad):
-                if i + j < len(puzzle):
-                    if puzzle[i + j] != 0:
-                        pi.append(puzzle[i + j])
-            patern.append(pi)
+    if size == 3:
+        patern = [
+            [1, 2, 3],
+            [4, 5, 6],
+            [7, 8]
+        ]
+    elif size == 4:
+        patern = [
+            [1, 2, 3, 4],
+            [5, 6, 7, 8],
+            [9, 10, 11, 12],
+            [13, 14, 15]
+        ]
+        # patern = [
+        #     [1, 2, 3, 4, 5],
+        #     [6, 7, 8, 9, 10],
+        #     [11, 12, 13, 14],
+        #     [15]
+        # ]
+    elif size == 5:
+        patern = [
+            [1, 2, 3, 4, 5],
+            [6, 7, 8, 9, 10],
+            [11, 12, 13, 14, 15],
+            [16, 17, 18, 19, 20],
+            [21, 22, 23, 24]
+        ]
+
+        # patern = [
+        #     [1, 2, 3, 4, 5],
+        #     [6, 11, 16, 21],
+        #     [7, 8, 9, 10],
+        #     [12, 13, 14, 15, 17, 18, 19, 20, 22, 23, 24]
+        # ]
     return patern
 
 def erase_element(p, puzzle_goal):
@@ -40,7 +59,7 @@ def heuristic_pattern_database(puzzle, tab_patern, patern_data, h_save):
     for i, patern in enumerate(tab_patern):
         current_pattern = erase_element(patern, puzzle)
         t_current = tuple(current_pattern)
-        if t_current in patern_data[i]:
+        if i < len(patern_data) and t_current in patern_data[i]:
             h_total += patern_data[i][t_current]
     h_save[t_puzzle] = h_total
     return h_total
@@ -54,6 +73,7 @@ def BFS(puzzle_goal, patern, size):
         cost = {tuple(start_patern): 0}
         close_tab = set()
         while len(open_tab) > 0:
+            check_memory()
             chosen_tab = open_tab.pop(0)
             close_tab.add(tuple(chosen_tab))
             for pos in possible_moves(chosen_tab, size):
@@ -75,36 +95,35 @@ def BFS(puzzle_goal, patern, size):
         all_posibilities.append(cost)
     return tuple(all_posibilities)
 
-def A_search_patern_data_heap(puzzle, size, goal, algo):
-    if puzzle == goal:
+def A_search_patern_data_heap(Npuzzle):
+    if Npuzzle.puzzle_resolve():
         print("Already solved !")
         return None
 
     max_len_open = 0
     open_heap = []
-    g_values = {tuple(puzzle): 0}
+    g_values = {tuple(Npuzzle.puzzle): 0}
     h_save = {}
 
-    tab_patern = extract_patern(goal, size)
+    tab_patern = extract_patern(Npuzzle.size)
     patern_data = {}
-    filename = f"patern/patern_data_s{size}"
+    filename = f"patern/patern_data_s{Npuzzle.size}"
     if os.path.exists(filename):
         print("Load patern")
         with open(filename, "rb") as f:
             patern_data = pickle.load(f)
     else:
-        print("Build patern")
+        print("Buildind patern ...")
         start = time.time()
-        patern_data = BFS(goal, tab_patern, size)
+        patern_data = BFS(Npuzzle.goal, tab_patern, Npuzzle.size)
         end = time.time()
         print("Time to build pattern:", round(end - start, 3), "seconds")
-        print("Nb element:", len(patern_data))
         with open(filename, "wb") as f:
             pickle.dump(patern_data, f)
         print("Pattern save")
 
-    f_init = heuristic_pattern_database(puzzle, tab_patern, patern_data, h_save)
-    heapq.heappush(open_heap, (f_init, puzzle))
+    f_init = heuristic_pattern_database(Npuzzle.puzzle, tab_patern, patern_data, h_save)
+    heapq.heappush(open_heap, (f_init, Npuzzle.puzzle))
 
     chemin = {}
     close_tab = set()
@@ -118,7 +137,7 @@ def A_search_patern_data_heap(puzzle, size, goal, algo):
             continue
         close_tab.add(t_chosen)
 
-        if t_chosen == tuple(goal):
+        if t_chosen == tuple(Npuzzle.goal):
             check_memory(True)
             print("Max len open_heap:", max_len_open)
             print("Evaluate state:", len(close_tab))
@@ -129,7 +148,7 @@ def A_search_patern_data_heap(puzzle, size, goal, algo):
             print("Nb move:", len(path))
             return path
 
-        for pos_puzzle in possible_moves(chosen_tab, size):
+        for pos_puzzle in possible_moves(chosen_tab, Npuzzle.size):
             if tuple(pos_puzzle) in close_tab:
                 continue
 
@@ -138,13 +157,15 @@ def A_search_patern_data_heap(puzzle, size, goal, algo):
                 g_values[tuple(pos_puzzle)] = g_next
                 chemin[tuple(pos_puzzle)] = chosen_tab
                 h_next = heuristic_pattern_database(pos_puzzle, tab_patern, patern_data, h_save)
-                if algo == "astar":
+                if Npuzzle.algo == "astar":
                     f_next = g_next + h_next
-                elif algo == "uniform":
+                elif Npuzzle.algo == "uniform":
                     f_next = g_next
-                elif algo == "greedy":
+                elif Npuzzle.algo == "greedy":
                     f_next = h_next
                 heapq.heappush(open_heap, (f_next, pos_puzzle))
                 if len(open_heap) > max_len_open:
                         max_len_open = len(open_heap)
+        # if len(close_tab) % 5000 == 0:
+        #     gc.collect()
     return None

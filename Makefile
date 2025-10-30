@@ -1,15 +1,10 @@
 env_python:
 	python3 -m venv venv
 
-install_pygame:
-	pip install pygame
-
-install_qt:
-	pip install pyqt6
-	pip install pyqt6-plugins
-
-active_env:
+install_element:
+	mkdir -p patern
 	source venv/bin/activate
+	pip install -r req.txt
 
 deactive_env:
 	deactivate

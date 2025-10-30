@@ -1,7 +1,7 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QPushButton
+from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QGraphicsOpacityEffect
 from PyQt6.QtGui import QFont
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve
 
 class PuzzleWindow(QWidget):
     def __init__(self, size, path, interval=500):
@@ -62,10 +62,18 @@ class PuzzleWindow(QWidget):
         self.index = 0
         self.timer.start(self.interval)
 
+    def puzzle_resolved(self):
+        for i in range(self.size):
+            for j in range(self.size):
+                label = self.labels[i][j]
+                label.setStyleSheet("color: white; background-color: mediumseagreen; border: 2px solid black; border-radius: 10px;")
+
+
     def next_step(self):
         self.index += 1
         if self.index >= len(self.path):
             self.timer.stop()
+            self.puzzle_resolved()
             return
         self.update_grid(self.path[self.index])
 

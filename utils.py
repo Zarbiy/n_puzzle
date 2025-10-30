@@ -3,9 +3,9 @@ import time
 import sys
 import psutil, os
 
-def calc_time(func, puzzle, s, goal, algo):
+def calc_time(func, Npuzzle):
     st = time.time()
-    path = func(puzzle, s, goal, algo)
+    path = func(Npuzzle)
     e = time.time()
     return round(e - st, 3), path
 
